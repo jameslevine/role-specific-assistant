@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/atoms/ProtectedRoute";
 import { ROLE_BRANDS } from "./constants";
 import RegisterPage from "./pages/RegisterPage";
+import RoleLandingPage from "./pages/RoleLandingPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
 import { defaultTheme } from "./styles/theme";
 import { useAuth } from "./hooks/useAuth";
@@ -83,15 +84,6 @@ const HomePage = () => {
     </div>
   );
 };
-
-// Placeholder page for landing — will be fully implemented next
-const RoleLandingPage = () => (
-  <div style={{ padding: "2rem", textAlign: "center" }}>
-    <h1>Role Landing Page</h1>
-    <p>Dynamic role-specific landing page with branding — coming next.</p>
-    <a href="/">← Back to Home</a>
-  </div>
-);
 
 const NotFoundPage = () => (
   <div style={{ padding: "2rem", textAlign: "center" }}>
