@@ -2,7 +2,14 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import LoginPage from "./pages/LoginPage";
+import ProtectedRoute from "./components/atoms/ProtectedRoute";
+import { ROLE_BRANDS } from "./constants";
+import RegisterPage from "./pages/RegisterPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 import { defaultTheme } from "./styles/theme";
+import { useAuth } from "./hooks/useAuth";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,68 +20,83 @@ const queryClient = new QueryClient({
   },
 });
 
-// Placeholder pages — will be replaced with actual implementations
-const HomePage = () => (
-  <div style={{ padding: "2rem", textAlign: "center" }}>
-    <h1>🏗️ TradeAssist</h1>
-    <p>AI-Powered Assistants for Trade Professionals</p>
-    <div
-      style={{
-        display: "flex",
-        gap: "1rem",
-        justifyContent: "center",
-        flexWrap: "wrap",
-        marginTop: "2rem",
-      }}
-    >
-      {[
-        { slug: "electrician", name: "SparkAssist", icon: "⚡" },
-        { slug: "plumber", name: "PipeAssist", icon: "🔧" },
-        { slug: "bricklayer", name: "BrickAssist", icon: "🧱" },
-        { slug: "carpenter", name: "TimberAssist", icon: "🪚" },
-        { slug: "painter", name: "BrushAssist", icon: "🎨" },
-      ].map((role) => (
-        <a
-          key={role.slug}
-          href={`/${role.slug}`}
-          style={{
-            padding: "1.5rem",
-            border: "1px solid #e2e8f0",
-            borderRadius: "12px",
-            textDecoration: "none",
-            color: "inherit",
-            minWidth: "180px",
-          }}
-        >
-          <div style={{ fontSize: "2rem" }}>{role.icon}</div>
-          <h3>{role.name}</h3>
-          <p style={{ color: "#64748b", fontSize: "0.875rem" }}>
-            for {role.slug}s
-          </p>
-        </a>
-      ))}
-    </div>
-  </div>
-);
+// Home page — shows all available role assistants
+const HomePage = () => {
+  const { isAuthenticated, logout } = useAuth();
 
+  return (
+    <div style={{ padding: "2rem", textAlign: "center", maxWidth: "1200px", margin: "0 auto" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "2rem",
+        }}
+      >
+        <h1 style={{ margin: 0 }}>🏗️ TradeAssist</h1>
+        {isAuthenticated ? (
+          <button onClick={logout} style={{ padding: "8px 16px", cursor: "pointer" }}>
+            Sign Out
+          </button>
+        ) : (
+          <a href="/login" style={{ padding: "8px 16px", textDecoration: "none" }}>
+            Sign In
+          </a>
+        )}
+      </div>
+      <p style={{ fontSize: "1.25rem", color: "#64748b", marginBottom: "2rem" }}>
+        AI-Powered Assistants for Trade Professionals
+      </p>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: "1.5rem",
+          marginTop: "2rem",
+        }}
+      >
+        {Object.entries(ROLE_BRANDS).map(([slug, brand]) => (
+          <a
+            key={slug}
+            href={`/${slug}`}
+            style={{
+              padding: "2rem 1.5rem",
+              border: "2px solid #e2e8f0",
+              borderRadius: "16px",
+              textDecoration: "none",
+              color: "inherit",
+              transition: "all 0.2s",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}
+          >
+            <div style={{ fontSize: "3rem" }}>{brand.icon}</div>
+            <h3 style={{ margin: 0, color: brand.color }}>{brand.name}</h3>
+            <p style={{ color: "#64748b", fontSize: "0.875rem", margin: 0 }}>{brand.tagline}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Placeholder pages for chat and landing — will be fully implemented next
 const RoleLandingPage = () => (
   <div style={{ padding: "2rem", textAlign: "center" }}>
     <h1>Role Landing Page</h1>
-    <p>This will be the role-specific landing page with branding.</p>
+    <p>Dynamic role-specific landing page with branding — coming next.</p>
+    <a href="/">← Back to Home</a>
   </div>
 );
 
 const ChatPage = () => (
   <div style={{ padding: "2rem" }}>
-    <h1>Chat</h1>
-    <p>AI Chat interface will be implemented here.</p>
-  </div>
-);
-
-const LoginPage = () => (
-  <div style={{ padding: "2rem", textAlign: "center" }}>
-    <h1>Login</h1>
-    <p>Cognito authentication will be implemented here.</p>
+    <h1>💬 Chat</h1>
+    <p>AI Chat interface with streaming responses — coming next.</p>
+    <a href="/">← Back to Home</a>
   </div>
 );
 
@@ -92,15 +114,33 @@ function App() {
         <CssBaseline />
         <BrowserRouter>
           <Routes>
+            {/* Public routes */}
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/verify" element={<VerifyEmailPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/:roleSlug" element={<RoleLandingPage />} />
-            <Route path="/:roleSlug/chat" element={<ChatPage />} />
+
+            {/* Protected routes */}
+            <Route
+              path="/:roleSlug/chat"
+              element={
+                <ProtectedRoute>
+                  <ChatPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/:roleSlug/chat/:conversationId"
-              element={<ChatPage />}
+              element={
+                <ProtectedRoute>
+                  <ChatPage />
+                </ProtectedRoute>
+              }
             />
+
+            {/* 404 */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </BrowserRouter>
