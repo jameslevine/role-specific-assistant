@@ -7,7 +7,7 @@ import {
   signIn,
   signOut,
   signUp,
-} from "@aws-amplify/auth";
+} from "aws-amplify/auth";
 
 // Amplify is configured in main.tsx before app renders
 

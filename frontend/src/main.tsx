@@ -1,6 +1,6 @@
 import "./index.css";
 
-import { Amplify } from "@aws-amplify/core";
+import { Amplify } from "aws-amplify";
 import App from "./App.tsx";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
