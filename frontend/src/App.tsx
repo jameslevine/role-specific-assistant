@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+import ChatPage from "./pages/ChatPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/atoms/ProtectedRoute";
@@ -83,19 +84,11 @@ const HomePage = () => {
   );
 };
 
-// Placeholder pages for chat and landing — will be fully implemented next
+// Placeholder page for landing — will be fully implemented next
 const RoleLandingPage = () => (
   <div style={{ padding: "2rem", textAlign: "center" }}>
     <h1>Role Landing Page</h1>
     <p>Dynamic role-specific landing page with branding — coming next.</p>
-    <a href="/">← Back to Home</a>
-  </div>
-);
-
-const ChatPage = () => (
-  <div style={{ padding: "2rem" }}>
-    <h1>💬 Chat</h1>
-    <p>AI Chat interface with streaming responses — coming next.</p>
     <a href="/">← Back to Home</a>
   </div>
 );
