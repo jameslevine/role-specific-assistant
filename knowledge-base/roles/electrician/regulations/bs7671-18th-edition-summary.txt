@@ -1,0 +1,136 @@
+BS 7671:2018+A2:2022 — IET Wiring Regulations, 18th Edition
+Summary of Key Requirements for UK Electricians
+
+PART 1: SCOPE, OBJECT AND FUNDAMENTAL PRINCIPLES
+
+1.1 Scope
+BS 7671 applies to the design, erection, and verification of electrical installations. It also applies to additions and alterations to existing installations.
+
+1.2 Object
+The object of BS 7671 is to provide rules for the design, erection, and verification of electrical installations so as to provide for safety and proper functioning for the intended use.
+
+PART 4: PROTECTION FOR SAFETY
+
+Chapter 41: Protection Against Electric Shock
+
+Regulation 411.3.3 — Automatic Disconnection of Supply
+Where protective equipotential bonding is applied in accordance with Regulation 411.3.1.2, the maximum disconnection times stated in Table 41.1 shall apply for final circuits not exceeding 63 A with one or more socket-outlets, and final circuits not exceeding 32 A supplying only fixed connected current-using equipment.
+
+Table 41.1 Maximum disconnection times:
+- 50V < Uo ≤ 120V: AC systems 0.8s, DC systems 5s
+- 120V < Uo ≤ 230V: AC systems 0.4s, DC systems 5s
+- 230V < Uo ≤ 400V: AC systems 0.2s, DC systems 0.4s
+- Uo > 400V: AC systems 0.1s, DC systems 0.1s
+
+Regulation 411.4 — Additional Protection by RCDs
+For socket-outlets with a rated current not exceeding 32 A, additional protection shall be provided by an RCD with a rated residual operating current (IΔn) not exceeding 30 mA.
+
+For mobile equipment with a rated current not exceeding 32 A for use outdoors, additional protection shall be provided by an RCD with a rated residual operating current not exceeding 30 mA.
+
+Chapter 42: Protection Against Thermal Effects
+
+Regulation 421.1 — Fire Protection
+Electrical equipment shall be selected and erected so that its temperature in normal operation and any foreseeable temperature rise shall not cause a fire hazard to adjacent materials.
+
+Chapter 43: Protection Against Overcurrent
+
+Regulation 432.1 — Nature of Protective Devices
+Every circuit shall be provided with a means of protection against overcurrent. The protective device may be a fuse, a circuit-breaker, or a combination of both.
+
+PART 5: SELECTION AND ERECTION OF EQUIPMENT
+
+Chapter 52: Selection and Erection of Wiring Systems
+
+Regulation 521.1 — Types of Wiring System
+The types of wiring system include:
+- Cables and conductors in conduit
+- Cables and conductors in trunking
+- Cables clipped direct
+- Cables in cable tray or cable ladder
+- Cables in cable ducting
+
+Regulation 522.6 — Cables in Walls and Partitions
+Where a cable is installed in a wall or partition at a depth of less than 50 mm from a surface of the wall or partition, the cable shall:
+(i) incorporate an earthed metallic covering, or
+(ii) be enclosed in earthed conduit, or
+(iii) be enclosed in earthed trunking, or
+(iv) be protected by a 30 mA RCD, or
+(v) be installed in a zone within 150 mm of the top of the wall or partition, or within 150 mm of an angle formed by two adjoining walls or partitions
+
+Chapter 54: Earthing Arrangements and Protective Conductors
+
+Regulation 542.1 — Earthing Arrangements
+The main earthing terminal shall be connected to the means of earthing by an earthing conductor.
+
+Table 54.7 Minimum cross-sectional area of protective conductors:
+- If S ≤ 16 mm²: protective conductor = S mm²
+- If 16 < S ≤ 35 mm²: protective conductor = 16 mm²
+- If S > 35 mm²: protective conductor = S/2 mm²
+
+PART 6: INSPECTION AND TESTING
+
+Chapter 61: Initial Verification
+
+Regulation 611.1 — General
+Every electrical installation shall, during erection and on completion before being put into service, be inspected and tested to verify, so far as is reasonably practicable, that the requirements of BS 7671 have been met.
+
+Regulation 612.1 — Continuity of Protective Conductors
+A test shall be made to verify the continuity of protective conductors, including protective bonding conductors.
+
+Regulation 612.2 — Continuity of Ring Final Circuit Conductors
+A test shall be made to verify the continuity of each conductor of every ring final circuit.
+
+Regulation 612.3 — Insulation Resistance
+The insulation resistance shall be measured between:
+(i) each live conductor and Earth
+(ii) between live conductors
+
+Minimum values of insulation resistance:
+- SELV and PELV circuits: 0.5 MΩ (test voltage 250V DC)
+- Up to and including 500V (except SELV and PELV): 1.0 MΩ (test voltage 500V DC)
+- Above 500V: 1.0 MΩ (test voltage 1000V DC)
+
+Regulation 612.4 — Protection by SELV, PELV or Electrical Separation
+Where protection by SELV, PELV or electrical separation is used, a measurement of the separation of the live parts from those of other circuits and from Earth shall be made.
+
+Regulation 612.5 — Polarity
+A test of polarity shall be made to verify that:
+(i) every fuse and single-pole control and protective device is connected in the line conductor only
+(ii) centre-contact bayonet and Edison screw lampholders have the outer or screwed contacts connected to the neutral conductor
+(iii) wiring has been correctly connected to socket-outlets and similar accessories
+
+Regulation 612.6 — Earth Fault Loop Impedance
+Where protective measures are used which require a knowledge of earth fault loop impedance, the relevant impedances shall be measured or determined by an alternative method.
+
+Regulation 612.9 — Functional Testing
+Assembly of switchgear and controlgear, drives, controls, and interlocks shall be subjected to a functional test to show that they are properly mounted, adjusted, and installed in accordance with BS 7671.
+
+PART P OF THE BUILDING REGULATIONS (ENGLAND & WALES)
+
+Part P requires that electrical installation work in dwellings is designed and installed to protect persons from fire and injury. It applies to:
+- New dwellings
+- Additions and alterations to existing dwellings
+- Common parts of buildings serving one or more dwellings
+
+Notifiable work includes:
+- Installation of a new circuit
+- Consumer unit replacement
+- Work in special locations (bathrooms, swimming pools)
+- Work in kitchens that involves a new circuit
+
+Non-notifiable work includes:
+- Replacing accessories (sockets, switches, light fittings)
+- Adding fused spurs to existing circuits (not in special locations)
+- Like-for-like cable replacement
+
+Competent Person Schemes:
+Electricians registered with a competent person scheme (e.g., NICEIC, NAPIT, ELECSA, ECA) can self-certify their work without involving Building Control.
+
+ELECTRICITY AT WORK REGULATIONS 1989
+
+Key requirements:
+- Regulation 4: All systems shall be constructed and maintained to prevent danger
+- Regulation 12: Means for cutting off supply and isolation
+- Regulation 13: Precautions for work on equipment made dead
+- Regulation 14: Work on or near live conductors (only permitted when unreasonable to work dead)
+- Regulation 16: Persons to be competent to prevent danger and injury
