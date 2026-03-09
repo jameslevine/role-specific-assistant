@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: TradeAssist - API Gateway and Lambda
+
+Parameters:
+  Environment:
+    Type: String
+  ProjectName:
+    Type: String
+  CognitoUserPoolArn:
+    Type: String
+  UsersTableName:
+    Type: String
+  ConversationsTableName:
+    Type: String
+  MessagesTableName:
+    Type: String
+  DocumentsTableName:
+    Type: String
+  UsageTableName:
+    Type: String
+  SubscriptionsTableName:
+    Type: String
+  UserDocsBucketName:
+    Type: String
+  RoleDocsBucketName:
+    Type: String
+
+Resources:
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub "${ProjectName}-${Environment}-api"
+      StageName: !Ref Environment
+      Cors:
+        AllowMethods: "'GET,POST,PATCH,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+        MaxAge: "'300'"
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}-${Environment}-api"
+      Handler: dist/index.handler
+      Runtime: nodejs20.x
+      MemorySize: 1024
+      Timeout: 30
+      CodeUri: ../backend/
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          USERS_TABLE: !Ref UsersTableName
+          CONVERSATIONS_TABLE: !Ref ConversationsTableName
+          MESSAGES_TABLE: !Ref MessagesTableName
+          DOCUMENTS_TABLE: !Ref DocumentsTableName
+          USAGE_TABLE: !Ref UsageTableName
+          SUBSCRIPTIONS_TABLE: !Ref SubscriptionsTableName
+          USER_DOCS_BUCKET: !Ref UserDocsBucketName
+          ROLE_DOCS_BUCKET: !Ref RoleDocsBucketName
+          COGNITO_USER_POOL_ID: !Select [1, !Split ["/", !Ref CognitoUserPoolArn]]
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConversationsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MessagesTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DocumentsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsageTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SubscriptionsTableName
+        - S3CrudPolicy:
+            BucketName: !Ref UserDocsBucketName
+        - S3ReadPolicy:
+            BucketName: !Ref RoleDocsBucketName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - bedrock:InvokeModelWithResponseStream
+                - bedrock:Retrieve
+                - bedrock:RetrieveAndGenerate
+              Resource: "*"
+        - Statement:
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ProjectName}-*"
+      Events:
+        ProxyApiRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway URL
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}"
+  ApiFunctionArn:
+    Description: API Lambda Function ARN
+    Value: !GetAtt ApiFunction.Arn

@@ -1,0 +1,41 @@
+{
+  "role": "electrician",
+  "brandName": "SparkAssist",
+  "jurisdiction": "UK",
+  "lastUpdated": "2026-03-09",
+  "documentCategories": [
+    {
+      "category": "regulations",
+      "description": "Official UK electrical regulations and standards",
+      "documents": [
+        "BS 7671:2018+A2:2022 (IET Wiring Regulations, 18th Edition)",
+        "Part P Building Regulations (England & Wales)",
+        "Electricity at Work Regulations 1989",
+        "BS 7909 (Temporary Electrical Systems)",
+        "BS 7919 (Flexible Cables)"
+      ]
+    },
+    {
+      "category": "guides",
+      "description": "Best practice guides and reference materials",
+      "documents": [
+        "IET On-Site Guide (BS 7671)",
+        "IET Guidance Note 3: Inspection & Testing",
+        "Cable sizing guide",
+        "Circuit design reference",
+        "Testing procedures handbook"
+      ]
+    },
+    {
+      "category": "compliance",
+      "description": "Compliance and certification requirements",
+      "documents": [
+        "Part P competent person scheme requirements",
+        "NICEIC registration guide",
+        "ECA membership requirements",
+        "Building control notification procedures"
+      ]
+    }
+  ],
+  "notes": "Documents should be placed in the regulations/ and guides/ subdirectories. PDF and text formats are supported. Documents will be automatically chunked and embedded by Bedrock Knowledge Bases."
+}

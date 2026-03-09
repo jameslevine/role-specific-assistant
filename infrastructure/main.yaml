@@ -1,0 +1,93 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: TradeAssist - Role-Specific AI Assistants SaaS Platform
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+  ProjectName:
+    Type: String
+    Default: tradeassist
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs20.x
+    MemorySize: 512
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
+
+Resources:
+  # Nested Stacks
+  CognitoStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./cognito.yaml
+      Parameters:
+        Environment: !Ref Environment
+        ProjectName: !Ref ProjectName
+
+  DynamoDBStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./dynamodb.yaml
+      Parameters:
+        Environment: !Ref Environment
+        ProjectName: !Ref ProjectName
+
+  S3CloudFrontStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./s3-cloudfront.yaml
+      Parameters:
+        Environment: !Ref Environment
+        ProjectName: !Ref ProjectName
+
+  ApiStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./api.yaml
+      Parameters:
+        Environment: !Ref Environment
+        ProjectName: !Ref ProjectName
+        CognitoUserPoolArn: !GetAtt CognitoStack.Outputs.UserPoolArn
+        UsersTableName: !GetAtt DynamoDBStack.Outputs.UsersTableName
+        ConversationsTableName: !GetAtt DynamoDBStack.Outputs.ConversationsTableName
+        MessagesTableName: !GetAtt DynamoDBStack.Outputs.MessagesTableName
+        DocumentsTableName: !GetAtt DynamoDBStack.Outputs.DocumentsTableName
+        UsageTableName: !GetAtt DynamoDBStack.Outputs.UsageTableName
+        SubscriptionsTableName: !GetAtt DynamoDBStack.Outputs.SubscriptionsTableName
+        UserDocsBucketName: !GetAtt S3CloudFrontStack.Outputs.UserDocsBucketName
+        RoleDocsBucketName: !GetAtt S3CloudFrontStack.Outputs.RoleDocsBucketName
+
+  MonitoringStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./monitoring.yaml
+      Parameters:
+        Environment: !Ref Environment
+        ProjectName: !Ref ProjectName
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway URL
+    Value: !GetAtt ApiStack.Outputs.ApiUrl
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !GetAtt CognitoStack.Outputs.UserPoolId
+  UserPoolClientId:
+    Description: Cognito User Pool Client ID
+    Value: !GetAtt CognitoStack.Outputs.UserPoolClientId
+  CloudFrontDistributionUrl:
+    Description: CloudFront Distribution URL
+    Value: !GetAtt S3CloudFrontStack.Outputs.CloudFrontDistributionUrl
+  FrontendBucketName:
+    Description: Frontend S3 Bucket Name
+    Value: !GetAtt S3CloudFrontStack.Outputs.FrontendBucketName
