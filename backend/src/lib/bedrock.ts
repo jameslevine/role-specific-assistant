@@ -1,14 +1,10 @@
 import { AWS_REGION, BEDROCK_MODEL_ID } from "../constants";
-import {
-  BedrockAgentRuntimeClient,
-  RetrieveAndGenerateCommand,
-  RetrieveCommand,
-} from "@aws-sdk/client-bedrock-agent-runtime";
+import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 
 import { Citation } from "../types";
 import { getRoleConfig } from "../constants/roles";
 
-const bedrockAgentRuntime = new BedrockAgentRuntimeClient({
+const bedrockRuntime = new BedrockRuntimeClient({
   region: AWS_REGION,
 });
 
@@ -21,98 +17,71 @@ export const queryKnowledgeBase = async (
   roleSlug: string,
   question: string,
   conversationHistory: Array<{ role: string; content: string }>,
-  userId?: string,
+  _userId?: string,
 ): Promise<RAGResponse> => {
   const roleConfig = getRoleConfig(roleSlug);
-  if (!roleConfig || !roleConfig.knowledgeBaseId) {
-    throw new Error(`No knowledge base configured for role: ${roleSlug}`);
+  if (!roleConfig) {
+    throw new Error(`No role configuration found for: ${roleSlug}`);
   }
 
   const systemPrompt = roleConfig.systemPrompt;
 
-  // Build context from conversation history
-  const historyContext = conversationHistory
-    .slice(-10) // Last 10 messages for context
-    .map(
-      (msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`,
-    )
-    .join("\n");
-
-  const fullQuery = historyContext
-    ? `Previous conversation:\n${historyContext}\n\nCurrent question: ${question}`
-    : question;
+  // Build messages array for Claude
+  const messages = [
+    ...conversationHistory.slice(-10).map((msg) => ({
+      role: msg.role === "user" ? "user" : "assistant",
+      content: msg.content,
+    })),
+    {
+      role: "user",
+      content: question,
+    },
+  ];
 
   try {
-    const command = new RetrieveAndGenerateCommand({
-      input: {
-        text: fullQuery,
-      },
-      retrieveAndGenerateConfiguration: {
-        type: "KNOWLEDGE_BASE",
-        knowledgeBaseConfiguration: {
-          knowledgeBaseId: roleConfig.knowledgeBaseId,
-          modelArn: `arn:aws:bedrock:${AWS_REGION}::foundation-model/${BEDROCK_MODEL_ID}`,
-          generationConfiguration: {
-            promptTemplate: {
-              textPromptTemplate: `${systemPrompt}\n\nUse the following retrieved documents to answer the user's question. Always cite the source document when referencing specific regulations or standards.\n\n$search_results$\n\nUser question: $query$`,
-            },
-          },
-          retrievalConfiguration: {
-            vectorSearchConfiguration: {
-              numberOfResults: 5,
-            },
-          },
-        },
-      },
+    // Use Claude 3.7 Sonnet via Bedrock InvokeModel
+    const modelId = BEDROCK_MODEL_ID.includes("claude-3-5")
+      ? "anthropic.claude-3-7-sonnet-20250219-v1:0"
+      : BEDROCK_MODEL_ID;
+
+    const command = new InvokeModelCommand({
+      modelId,
+      contentType: "application/json",
+      accept: "application/json",
+      body: JSON.stringify({
+        anthropic_version: "bedrock-2023-05-31",
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages,
+      }),
     });
 
-    const response = await bedrockAgentRuntime.send(command);
+    const response = await bedrockRuntime.send(command);
+    const responseBody = JSON.parse(new TextDecoder().decode(response.body));
 
-    const citations: Citation[] = (response.citations || []).flatMap(
-      (citation) =>
-        (citation.retrievedReferences || []).map((ref) => ({
-          documentId: ref.location?.s3Location?.uri || "unknown",
-          documentName:
-            (ref.metadata?.["fileName"] as string) || "Unknown Document",
-          excerpt: ref.content?.text || "",
-          source: "shared" as const,
-        })),
-    );
+    const answer =
+      responseBody.content?.[0]?.text ||
+      "I was unable to generate a response. Please try rephrasing your question.";
+
+    // No citations in direct invoke mode — will be added when KB is set up
+    const citations: Citation[] = [];
 
     return {
-      answer:
-        response.output?.text ||
-        "I was unable to generate a response. Please try rephrasing your question.",
+      answer,
       citations,
     };
   } catch (error) {
-    console.error("Error querying knowledge base:", error);
+    console.error("Error invoking Bedrock model:", error);
     throw error;
   }
 };
 
+// Placeholder for future KB-based retrieval
 export const retrieveFromKnowledgeBase = async (
-  knowledgeBaseId: string,
-  query: string,
-  numberOfResults: number = 5,
+  _knowledgeBaseId: string,
+  _query: string,
+  _numberOfResults: number = 5,
 ) => {
-  try {
-    const command = new RetrieveCommand({
-      knowledgeBaseId,
-      retrievalQuery: {
-        text: query,
-      },
-      retrievalConfiguration: {
-        vectorSearchConfiguration: {
-          numberOfResults,
-        },
-      },
-    });
-
-    const response = await bedrockAgentRuntime.send(command);
-    return response.retrievalResults || [];
-  } catch (error) {
-    console.error("Error retrieving from knowledge base:", error);
-    throw error;
-  }
+  // Will be implemented when Bedrock Knowledge Base is set up
+  return [];
 };

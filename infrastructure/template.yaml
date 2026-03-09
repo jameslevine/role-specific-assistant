@@ -276,7 +276,7 @@ Resources:
           ROLE_DOCS_BUCKET: !Ref RoleDocsBucket
           COGNITO_USER_POOL_ID: !Ref UserPool
           COGNITO_CLIENT_ID: !Ref UserPoolClient
-          BEDROCK_MODEL_ID: "anthropic.claude-3-5-sonnet-20241022-v2:0"
+          BEDROCK_MODEL_ID: "anthropic.claude-3-7-sonnet-20250219-v1:0"
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
       Policies:
         - DynamoDBCrudPolicy:
