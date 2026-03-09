@@ -9,17 +9,7 @@ import {
   signUp,
 } from "@aws-amplify/auth";
 
-import { Amplify } from "@aws-amplify/core";
-
-// Configure Amplify
-Amplify.configure({
-  Auth: {
-    Cognito: {
-      userPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID || "",
-      userPoolClientId: import.meta.env.VITE_COGNITO_CLIENT_ID || "",
-    },
-  },
-});
+// Amplify is configured in main.tsx before app renders
 
 export const authService = {
   signIn: async (email: string, password: string) => {
