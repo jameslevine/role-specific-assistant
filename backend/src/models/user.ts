@@ -12,6 +12,6 @@ export const userUpdateBodySchema = Joi.object({
 
 export const subscriptionCheckoutBodySchema = Joi.object({
   tier: Joi.string().valid("pro", "business").required(),
-  successUrl: Joi.string().uri().required(),
-  cancelUrl: Joi.string().uri().required(),
+  successUrl: Joi.string().required(),
+  cancelUrl: Joi.string().required(),
 });
