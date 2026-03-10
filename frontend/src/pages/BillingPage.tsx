@@ -1,10 +1,12 @@
 import {
+  Alert,
   AppBar,
   Box,
   Button,
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Container,
   Grid,
   IconButton,
@@ -27,21 +29,30 @@ const BillingPage = () => {
   const { logout } = useAuth();
   const user = useStore((state) => state.user);
   const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const brand = ROLE_BRANDS[roleSlug] || { name: "TradeAssist", icon: "🏗️", color: "#2563EB" };
   const currentTier = user?.tier || "free";
 
   const handleUpgrade = async (tier: string) => {
     setLoading(tier);
+    setError(null);
     try {
       const response = await apiClient.post<{ checkoutUrl: string }>("/subscriptions/checkout", {
         tier,
         successUrl: `${window.location.origin}/${roleSlug}/chat?upgraded=true`,
         cancelUrl: `${window.location.origin}/${roleSlug}/billing?cancelled=true`,
       });
-      window.location.assign(response.checkoutUrl);
-    } catch (err) {
+      if (response.checkoutUrl) {
+        window.location.assign(response.checkoutUrl);
+      } else {
+        setError("No checkout URL returned. Please try again.");
+        setLoading(null);
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to create checkout session";
       console.error("Failed to create checkout session:", err);
+      setError(message);
       setLoading(null);
     }
   };
@@ -116,6 +127,12 @@ const BillingPage = () => {
       </AppBar>
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+
         {/* Current Plan */}
         <Card sx={{ mb: 4, bgcolor: `${brand.color}08`, border: `1px solid ${brand.color}30` }}>
           <CardContent sx={{ textAlign: "center" }}>
@@ -233,7 +250,11 @@ const BillingPage = () => {
                           : {}
                       }
                     >
-                      {loading === plan.tier ? "Loading..." : `Upgrade to ${plan.name}`}
+                      {loading === plan.tier ? (
+                        <CircularProgress size={20} />
+                      ) : (
+                        `Upgrade to ${plan.name}`
+                      )}
                     </Button>
                   )}
                 </CardContent>
