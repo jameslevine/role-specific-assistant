@@ -10,6 +10,7 @@ import {
 
 import { Citation } from "../types";
 import { getRoleConfig } from "../constants/roles";
+import { getUserDocumentContext } from "./user-docs";
 
 const bedrockRuntime = new BedrockRuntimeClient({ region: AWS_REGION });
 const bedrockAgentRuntime = new BedrockAgentRuntimeClient({ region: AWS_REGION });
@@ -30,13 +31,23 @@ export const queryKnowledgeBase = async (
     throw new Error(`No role configuration found for: ${roleSlug}`);
   }
 
+  // Fetch user document context if userId provided
+  let userDocContext = "";
+  if (_userId) {
+    userDocContext = await getUserDocumentContext(_userId, roleSlug);
+  }
+
+  const enhancedSystemPrompt = userDocContext
+    ? `${roleConfig.systemPrompt}${userDocContext}`
+    : roleConfig.systemPrompt;
+
   // If the role has a Knowledge Base configured, use RAG
   if (roleConfig.knowledgeBaseId) {
-    return queryWithRAG(roleConfig.knowledgeBaseId, roleConfig.systemPrompt, question, conversationHistory);
+    return queryWithRAG(roleConfig.knowledgeBaseId, enhancedSystemPrompt, question, conversationHistory);
   }
 
   // Otherwise, fall back to direct model invocation
-  return queryDirectModel(roleConfig.systemPrompt, question, conversationHistory);
+  return queryDirectModel(enhancedSystemPrompt, question, conversationHistory);
 };
 
 async function queryWithRAG(
