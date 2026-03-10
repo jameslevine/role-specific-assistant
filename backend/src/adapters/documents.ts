@@ -90,7 +90,7 @@ export const createDbDocument = async (
     fileSize,
     description,
     s3Key,
-    status: DocumentStatus.PROCESSING,
+    status: DocumentStatus.READY,
     createdAt: dayjs().toISOString(),
   };
 
