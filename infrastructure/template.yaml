@@ -357,6 +357,7 @@ Resources:
           COGNITO_USER_POOL_ID: !Ref UserPool
           COGNITO_CLIENT_ID: !Ref UserPoolClient
           BEDROCK_MODEL_ID: "anthropic.claude-3-7-sonnet-20250219-v1:0"
+          STRIPE_SECRET_KEY_ARN: "tradeassist-stripe-secret-key"
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
       Policies:
         - DynamoDBCrudPolicy:

@@ -6,6 +6,7 @@ import { errorHandler } from "./middleware/error-handler";
 import express from "express";
 import { router as rolesRouter } from "./routes/roles";
 import serverless from "serverless-http";
+import { router as subscriptionsRouter } from "./routes/subscriptions";
 import { router as usersRouter } from "./routes/users";
 
 const app = express();
@@ -38,6 +39,7 @@ app.use(express.json());
 app.use("/v1/roles", rolesRouter);
 
 // Authenticated routes
+app.use("/v1/subscriptions", subscriptionsRouter);
 app.use("/v1/users", usersRouter);
 app.use("/v1/:roleSlug/chat", chatRouter);
 app.use("/v1/:roleSlug/conversations", conversationsRouter);
