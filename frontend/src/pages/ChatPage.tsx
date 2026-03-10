@@ -28,6 +28,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DescriptionIcon from "@mui/icons-material/Description";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -219,6 +220,16 @@ const ChatPage = () => {
             sx={{ mb: 1 }}
           >
             My Documents
+          </Button>
+          <Button
+            fullWidth
+            size="small"
+            variant="outlined"
+            startIcon={<CreditCardIcon />}
+            onClick={() => navigate(`/${roleSlug}/billing`)}
+            sx={{ mb: 1 }}
+          >
+            Upgrade Plan
           </Button>
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button size="small" onClick={() => navigate("/")} startIcon={<ArrowBackIcon />}>
