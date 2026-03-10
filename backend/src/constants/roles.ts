@@ -37,6 +37,7 @@ Format your responses clearly with headings and bullet points where appropriate.
       "BS 7919 (Flexible Cables)",
     ],
     jurisdiction: "UK",
+    knowledgeBaseId: "FVM0PIRNHC",
     available: true,
   },
   plumber: {
