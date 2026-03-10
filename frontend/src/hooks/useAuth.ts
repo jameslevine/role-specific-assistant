@@ -1,18 +1,29 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
+import { apiClient } from "../services/apiClient";
 import { authService } from "../services/auth";
 import { useStore } from "../store";
 
 export const useAuth = () => {
   const { isAuthenticated, setAuthenticated, setAccessToken, setUser } = useStore();
+  const [isLoading, setIsLoading] = useState(true);
 
   const checkAuth = useCallback(async () => {
+    setIsLoading(true);
     try {
       const user = await authService.getCurrentUser();
       if (user) {
         const token = await authService.getAccessToken();
         setAuthenticated(true);
         setAccessToken(token);
+
+        // Fetch user profile from API
+        try {
+          const profile = await apiClient.get<Record<string, unknown>>("/users/me");
+          setUser(profile as any);
+        } catch {
+          // User profile fetch failed — not critical
+        }
       } else {
         setAuthenticated(false);
         setAccessToken(null);
@@ -20,8 +31,10 @@ export const useAuth = () => {
     } catch {
       setAuthenticated(false);
       setAccessToken(null);
+    } finally {
+      setIsLoading(false);
     }
-  }, [setAuthenticated, setAccessToken]);
+  }, [setAuthenticated, setAccessToken, setUser]);
 
   useEffect(() => {
     checkAuth();
@@ -66,6 +79,7 @@ export const useAuth = () => {
 
   return {
     isAuthenticated,
+    isLoading,
     login,
     register,
     verifyEmail,
