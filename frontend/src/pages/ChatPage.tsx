@@ -29,6 +29,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DescriptionIcon from "@mui/icons-material/Description";
 import MenuIcon from "@mui/icons-material/Menu";
 import SendIcon from "@mui/icons-material/Send";
 import { useAuth } from "../hooks/useAuth";
@@ -209,12 +210,24 @@ const ChatPage = () => {
         </List>
         <Divider />
         <Box sx={{ p: 2 }}>
-          <Button size="small" onClick={() => navigate("/")} startIcon={<ArrowBackIcon />}>
-            All Assistants
+          <Button
+            fullWidth
+            size="small"
+            variant="outlined"
+            startIcon={<DescriptionIcon />}
+            onClick={() => navigate(`/${roleSlug}/documents`)}
+            sx={{ mb: 1 }}
+          >
+            My Documents
           </Button>
-          <Button size="small" onClick={logout} sx={{ ml: 1 }}>
-            Sign Out
-          </Button>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button size="small" onClick={() => navigate("/")} startIcon={<ArrowBackIcon />}>
+              Home
+            </Button>
+            <Button size="small" onClick={logout}>
+              Sign Out
+            </Button>
+          </Box>
         </Box>
       </Drawer>
 

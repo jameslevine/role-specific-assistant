@@ -3,6 +3,7 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import ChatPage from "./pages/ChatPage";
+import DocumentsPage from "./pages/DocumentsPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/atoms/ProtectedRoute";
@@ -121,6 +122,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ChatPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/:roleSlug/documents"
+              element={
+                <ProtectedRoute>
+                  <DocumentsPage />
                 </ProtectedRoute>
               }
             />
