@@ -3,6 +3,7 @@ import {
   createPortalSession,
   getSubscription,
   handleStripeWebhook,
+  verifyCheckoutSession,
 } from "../controllers/subscriptions";
 
 import { cognitoAuthMiddleware } from "../middleware/cognito-auth";
@@ -23,6 +24,8 @@ router.post(
 router.get("/me", cognitoAuthMiddleware, getSubscription);
 
 router.post("/portal", cognitoAuthMiddleware, createPortalSession);
+
+router.post("/verify", cognitoAuthMiddleware, verifyCheckoutSession);
 
 // Webhook (no auth — Stripe sends directly)
 router.post("/webhook", handleStripeWebhook);

@@ -14,22 +14,50 @@ import {
   Typography,
 } from "@mui/material";
 import { ROLE_BRANDS, TIER_PRICES } from "../constants";
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { apiClient } from "../services/apiClient";
 import { useAuth } from "../hooks/useAuth";
-import { useState } from "react";
 import { useStore } from "../store";
 
 const BillingPage = () => {
   const { roleSlug = "" } = useParams();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const [searchParams] = useSearchParams();
+  const { logout, checkAuth } = useAuth();
   const user = useStore((state) => state.user);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Verify Stripe checkout session on return from payment
+  useEffect(() => {
+    const sessionId = searchParams.get("session_id");
+    const success = searchParams.get("success");
+
+    if (success === "true" && sessionId) {
+      const verifySession = async () => {
+        try {
+          const result = await apiClient.post<{ success: boolean; tier: string; message: string }>(
+            "/subscriptions/verify",
+            { sessionId },
+          );
+          if (result.success) {
+            setSuccessMessage(`🎉 Successfully upgraded to ${result.tier.toUpperCase()}!`);
+            // Refresh user profile to get updated tier
+            await checkAuth();
+          }
+        } catch (err) {
+          console.error("Failed to verify session:", err);
+          setError("Payment was received but we couldn't verify it. Please refresh the page.");
+        }
+      };
+      verifySession();
+    }
+  }, [searchParams, checkAuth]);
 
   const brand = ROLE_BRANDS[roleSlug] || { name: "TradeAssist", icon: "🏗️", color: "#2563EB" };
   const currentTier = user?.tier || "free";
@@ -40,7 +68,7 @@ const BillingPage = () => {
     try {
       const response = await apiClient.post<{ checkoutUrl: string }>("/subscriptions/checkout", {
         tier,
-        successUrl: `${window.location.origin}/${roleSlug}/chat?upgraded=true`,
+        successUrl: `${window.location.origin}/${roleSlug}/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${window.location.origin}/${roleSlug}/billing?cancelled=true`,
       });
       if (response.checkoutUrl) {
@@ -127,6 +155,12 @@ const BillingPage = () => {
       </AppBar>
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
+        {successMessage && (
+          <Alert severity="success" sx={{ mb: 3 }}>
+            {successMessage}
+          </Alert>
+        )}
+
         {error && (
           <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
             {error}

@@ -139,6 +139,59 @@ export const createPortalSession = async (req: Request, res: Response) => {
   }
 };
 
+export const verifyCheckoutSession = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
+    }
+
+    const { sessionId } = req.body;
+    const userId = req.user.sub;
+
+    if (!sessionId) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: "Session ID is required" });
+    }
+
+    const stripe = await getStripe();
+
+    // Retrieve the checkout session from Stripe
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    // Verify the session belongs to this user
+    if (session.metadata?.userId !== userId) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({ message: "Session does not belong to this user" });
+    }
+
+    // Check if payment was successful
+    if (session.payment_status === "paid" && session.status === "complete") {
+      const tier = session.metadata?.tier;
+
+      if (tier) {
+        await updateDbUser(userId, {
+          tier: tier as SubscriptionTier,
+          stripeCustomerId: session.customer as string,
+        });
+
+        return res.status(HTTP_STATUS.OK).json({
+          success: true,
+          tier,
+          message: `Successfully upgraded to ${tier}`,
+        });
+      }
+    }
+
+    res.status(HTTP_STATUS.OK).json({
+      success: false,
+      message: "Payment not yet completed",
+    });
+  } catch (error) {
+    console.error("Error verifying checkout session:", error);
+    res
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .json({ message: "Error verifying checkout session" });
+  }
+};
+
 export const handleStripeWebhook = async (req: Request, res: Response) => {
   try {
     const stripe = await getStripe();
