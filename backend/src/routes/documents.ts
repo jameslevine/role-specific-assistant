@@ -1,4 +1,5 @@
 import {
+  confirmUpload,
   deleteDocument,
   getDocumentById,
   getDocuments,
@@ -39,6 +40,12 @@ router.get(
   cognitoAuthMiddleware,
   validateParams(documentParamsSchema),
   getDocumentById,
+);
+
+router.post(
+  "/:documentId/confirm",
+  cognitoAuthMiddleware,
+  confirmUpload,
 );
 
 router.delete(

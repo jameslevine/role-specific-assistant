@@ -80,9 +80,10 @@ export const createDbDocument = async (
   fileSize: number,
   s3Key: string,
   description?: string,
+  customDocumentId?: string,
 ): Promise<UserDocument> => {
   const document: UserDocument = {
-    documentId: `doc_${uuidv4()}`,
+    documentId: customDocumentId || `doc_${uuidv4()}`,
     userId,
     roleSlug,
     fileName,
@@ -90,7 +91,7 @@ export const createDbDocument = async (
     fileSize,
     description,
     s3Key,
-    status: DocumentStatus.READY,
+    status: DocumentStatus.PROCESSING,
     createdAt: dayjs().toISOString(),
   };
 
@@ -104,6 +105,27 @@ export const createDbDocument = async (
     return document;
   } catch (error) {
     console.error("Error creating document:", error);
+    throw error;
+  }
+};
+
+export const updateDbDocumentStatus = async (
+  documentId: string,
+  status: DocumentStatus,
+): Promise<void> => {
+  const { UpdateCommand } = await import("@aws-sdk/lib-dynamodb");
+  const params = {
+    TableName: DOCUMENTS_TABLE,
+    Key: { documentId },
+    UpdateExpression: "SET #status = :status",
+    ExpressionAttributeNames: { "#status": "status" },
+    ExpressionAttributeValues: { ":status": status },
+  };
+
+  try {
+    await dynamodb.send(new UpdateCommand(params));
+  } catch (error) {
+    console.error("Error updating document status:", error);
     throw error;
   }
 };
