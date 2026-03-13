@@ -2,9 +2,11 @@ import { Box, Button, Card, CardContent, Chip, Container, Grid, Typography } fro
 import { ROLE_BRANDS, TIER_PRICES } from "../constants";
 import { useNavigate, useParams } from "react-router-dom";
 
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import ChatIcon from "@mui/icons-material/Chat";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import GavelIcon from "@mui/icons-material/Gavel";
+import MarketingLayout from "../layouts/MarketingLayout";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useAuth } from "../hooks/useAuth";
 
@@ -17,15 +19,16 @@ const RoleLandingPage = () => {
 
   if (!brand) {
     return (
-      <Container maxWidth="sm" sx={{ textAlign: "center", py: 10 }}>
-        <Typography variant="h3">🔍</Typography>
-        <Typography variant="h4" sx={{ mt: 2 }}>
-          Role not found
-        </Typography>
-        <Button onClick={() => navigate("/")} sx={{ mt: 2 }}>
-          View All Assistants
-        </Button>
-      </Container>
+      <MarketingLayout>
+        <Container maxWidth="sm" sx={{ textAlign: "center", py: 10 }}>
+          <Typography variant="h4" sx={{ mt: 2 }}>
+            Role not found
+          </Typography>
+          <Button onClick={() => navigate("/")} sx={{ mt: 2 }}>
+            View All Assistants
+          </Button>
+        </Container>
+      </MarketingLayout>
     );
   }
 
@@ -38,7 +41,7 @@ const RoleLandingPage = () => {
   };
 
   return (
-    <Box>
+    <MarketingLayout>
       {/* Hero Section */}
       <Box
         sx={{
@@ -73,9 +76,21 @@ const RoleLandingPage = () => {
           </Box>
 
           <Box sx={{ textAlign: "center", maxWidth: 800, mx: "auto" }}>
-            <Typography variant="h1" sx={{ fontSize: { xs: "3rem", md: "4.5rem" }, mb: 1 }}>
-              {brand.icon}
-            </Typography>
+            <Box
+              sx={{
+                width: 80,
+                height: 80,
+                borderRadius: 3,
+                bgcolor: `${brand.color}15`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mx: "auto",
+                mb: 2,
+              }}
+            >
+              <AutoAwesomeIcon sx={{ fontSize: 40, color: brand.color }} />
+            </Box>
             <Typography
               variant="h2"
               sx={{
@@ -328,7 +343,7 @@ const RoleLandingPage = () => {
           </Button>
         </Container>
       </Box>
-    </Box>
+    </MarketingLayout>
   );
 };
 
