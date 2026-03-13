@@ -9,6 +9,15 @@ export interface RoleTheme {
 }
 
 const baseThemeOptions: ThemeOptions = {
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 900,
+      lg: 1200,
+      xl: 1920,
+    },
+  },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: { fontWeight: 700 },
@@ -37,6 +46,19 @@ const baseThemeOptions: ThemeOptions = {
         root: {
           borderRadius: 16,
           boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+        },
+      },
+    },
+    MuiContainer: {
+      defaultProps: {
+        maxWidth: "xl",
+      },
+      styleOverrides: {
+        maxWidthXl: {
+          maxWidth: "1440px !important",
+          "@media (min-width: 1920px)": {
+            maxWidth: "1600px !important",
+          },
         },
       },
     },
