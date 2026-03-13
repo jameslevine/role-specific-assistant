@@ -2,10 +2,11 @@ import { AWS_REGION, USER_DOCS_BUCKET } from "../constants";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 import { getDbDocumentsByUserId } from "../adapters/documents";
+import mammoth from "mammoth";
 
 const s3Client = new S3Client({ region: AWS_REGION });
 
-// File types we can read as text
+// File types we can read as text directly
 const TEXT_READABLE_TYPES = [
   "text/plain",
   "text/csv",
@@ -22,13 +23,69 @@ const isTextReadable = (fileType: string, fileName: string): boolean => {
   );
 };
 
+const isPDF = (fileType: string, fileName: string): boolean => {
+  return (
+    fileType === "application/pdf" || fileName.toLowerCase().endsWith(".pdf")
+  );
+};
+
+const isDOCX = (fileType: string, fileName: string): boolean => {
+  return (
+    fileType ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    fileName.toLowerCase().endsWith(".docx")
+  );
+};
+
+const getFileFromS3 = async (
+  s3Key: string,
+): Promise<{ buffer: Buffer; text?: string }> => {
+  const command = new GetObjectCommand({
+    Bucket: USER_DOCS_BUCKET,
+    Key: s3Key,
+  });
+
+  const response = await s3Client.send(command);
+  const byteArray = await response.Body?.transformToByteArray();
+
+  if (!byteArray) {
+    throw new Error("Empty response from S3");
+  }
+
+  const buffer = Buffer.from(byteArray);
+  return { buffer };
+};
+
+const extractTextFromPDF = async (buffer: Buffer): Promise<string> => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { PDFParse } = require("pdf-parse");
+    const parser = new PDFParse(buffer);
+    await parser.load();
+    const text = await parser.getText();
+    return text || "";
+  } catch (error) {
+    console.error("Error parsing PDF:", error);
+    return "[PDF could not be parsed]";
+  }
+};
+
+const extractTextFromDOCX = async (buffer: Buffer): Promise<string> => {
+  try {
+    const result = await mammoth.extractRawText({ buffer });
+    return result.value || "";
+  } catch (error) {
+    console.error("Error parsing DOCX:", error);
+    return "[DOCX could not be parsed]";
+  }
+};
+
 export const getUserDocumentContext = async (
   userId: string,
   roleSlug: string,
   maxDocs: number = 5,
 ): Promise<string> => {
   try {
-    // Get user's documents from DynamoDB
     const docsResult = await getDbDocumentsByUserId(userId, roleSlug, maxDocs);
 
     if (!docsResult.items || docsResult.items.length === 0) {
@@ -43,46 +100,57 @@ export const getUserDocumentContext = async (
 
     for (const doc of docsResult.items) {
       try {
+        let content = "";
+
+        console.log(
+          `Processing document: ${doc.fileName} (${doc.fileType}) from S3 key: ${doc.s3Key}`,
+        );
+
         if (isTextReadable(doc.fileType, doc.fileName)) {
-          console.log(
-            `Reading document: ${doc.fileName} (${doc.fileType}) from S3 key: ${doc.s3Key}`,
-          );
-
-          const command = new GetObjectCommand({
-            Bucket: USER_DOCS_BUCKET,
-            Key: doc.s3Key,
-          });
-
-          const response = await s3Client.send(command);
-          const content = await response.Body?.transformToString();
-
-          if (content) {
-            // Allow up to 4000 chars per document for better context
-            const truncated =
-              content.length > 4000
-                ? content.substring(0, 4000) + "\n... [document truncated]"
-                : content;
-            docContents.push(
-              `--- User Document: "${doc.fileName}" ---\n${truncated}\n--- End of "${doc.fileName}" ---`,
-            );
-            console.log(
-              `Successfully read ${content.length} chars from ${doc.fileName}`,
-            );
-          }
+          // Read text files directly
+          const { buffer } = await getFileFromS3(doc.s3Key);
+          content = buffer.toString("utf-8");
+        } else if (isPDF(doc.fileType, doc.fileName)) {
+          // Extract text from PDF
+          console.log(`Extracting text from PDF: ${doc.fileName}`);
+          const { buffer } = await getFileFromS3(doc.s3Key);
+          content = await extractTextFromPDF(buffer);
+        } else if (isDOCX(doc.fileType, doc.fileName)) {
+          // Extract text from DOCX
+          console.log(`Extracting text from DOCX: ${doc.fileName}`);
+          const { buffer } = await getFileFromS3(doc.s3Key);
+          content = await extractTextFromDOCX(buffer);
         } else {
-          // For non-text files (PDF, DOCX), include metadata only
+          // Unsupported format — include metadata only
           docContents.push(
-            `--- User Document: "${doc.fileName}" (${doc.fileType}, ${Math.round(doc.fileSize / 1024)}KB) ---\n[This document is in ${doc.fileType} format. Text extraction for this format is not yet supported. The user uploaded this file${doc.description ? `: ${doc.description}` : "."}]\n--- End of "${doc.fileName}" ---`,
+            `--- User Document: "${doc.fileName}" (${doc.fileType}) ---\n[Unsupported format. The user uploaded this file${doc.description ? `: ${doc.description}` : "."}]\n--- End ---`,
+          );
+          continue;
+        }
+
+        if (content && content.trim().length > 0) {
+          const truncated =
+            content.length > 6000
+              ? content.substring(0, 6000) + "\n... [document truncated]"
+              : content;
+          docContents.push(
+            `--- User Document: "${doc.fileName}" ---\n${truncated}\n--- End of "${doc.fileName}" ---`,
+          );
+          console.log(
+            `Successfully extracted ${content.length} chars from ${doc.fileName}`,
+          );
+        } else {
+          docContents.push(
+            `--- User Document: "${doc.fileName}" ---\n[Document was empty or text could not be extracted]\n--- End ---`,
           );
         }
       } catch (err: any) {
         console.error(
-          `Error reading document ${doc.documentId} (${doc.fileName}):`,
+          `Error processing document ${doc.documentId} (${doc.fileName}):`,
           err.message || err,
         );
-        // Include a note that the document exists but couldn't be read
         docContents.push(
-          `--- User Document: "${doc.fileName}" ---\n[Document exists but could not be read from storage. S3 Key: ${doc.s3Key}]\n--- End of "${doc.fileName}" ---`,
+          `--- User Document: "${doc.fileName}" ---\n[Error reading document: ${err.message || "unknown error"}]\n--- End ---`,
         );
       }
     }
